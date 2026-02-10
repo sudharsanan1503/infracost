@@ -8,8 +8,9 @@ on:
 jobs:
   infracost:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Setup Infracost
@@ -18,6 +19,7 @@ jobs:
           api-key: ${{ secrets.INFRACOST_API_KEY }}
 
       - name: Run Infracost
-        run: |
-          infracost breakdown --path . --format json --out-file infracost.json
-          infracost comment github --path infracost.json
+        uses: infracost/actions/run@v3
+        with:
+          path: .
+          post-condition: always
