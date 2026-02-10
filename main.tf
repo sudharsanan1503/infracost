@@ -1,14 +1,82 @@
+############################
+# Provider
+############################
 provider "aws" {
   region = "us-east-1"
 }
 
-resource "aws_instance" "cost_test" {
-  ami           = "ami-0c55b159cbfafe1f0"
-  instance_type = "t3.micro"   # CHEAP
-
-  tags = {
-    Environment = "Dev"
-    Project     = "Infracost-Test"
+############################
+# Common Tags (VERY IMPORTANT)
+############################
+locals {
+  common_tags = {
+    Project     = "Infracost-Demo"
+    Environment = "test"
     Owner       = "Sudharsanan"
+    ManagedBy   = "Terraform"
   }
+}
+
+############################
+# EC2 Instance
+############################
+resource "aws_instance" "demo_ec2" {
+  ami           = "ami-0f5ee92e2d63afc18"   # Amazon Linux 2 (example)
+  instance_type = "t3.micro"
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "demo-ec2"
+    }
+  )
+}
+
+############################
+# S3 Bucket (Object Storage)
+############################
+resource "aws_s3_bucket" "app_bucket" {
+  bucket        = "infracost-demo-app-sudharsanan"
+  force_destroy = true
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "app-bucket"
+    }
+  )
+}
+
+############################
+# S3 Log Bucket
+############################
+resource "aws_s3_bucket" "log_bucket" {
+  bucket        = "infracost-demo-logs-sudharsanan"
+  force_destroy = true
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "log-bucket"
+    }
+  )
+}
+
+############################
+# Enable S3 Access Logging
+############################
+resource "aws_s3_bucket_logging" "app_bucket_logging" {
+  bucket        = aws_s3_bucket.app_bucket.id
+  target_bucket = aws_s3_bucket.log_bucket.id
+  target_prefix = "access-logs/"
+}
+
+############################
+# CloudWatch Log Group
+############################
+resource "aws_cloudwatch_log_group" "demo_logs" {
+  name              = "/infracost/demo/app"
+  retention_in_days = 7
+
+  tags = local.common_tags
 }
