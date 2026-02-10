@@ -1,0 +1,21 @@
+name: Infracost
+on:
+  pull_request:
+    paths:
+      - '**.tf'
+
+jobs:
+  infracost:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Infracost
+        uses: infracost/actions/setup@v2
+
+      - name: Generate cost estimate
+        run: infracost breakdown --path=main.tf --format=json --out-file=report.json
+
+      - name: Upload to Infracost Cloud
+        run: infracost upload --path=report.json
