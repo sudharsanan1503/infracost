@@ -4,7 +4,7 @@ provider "aws" {
 
 resource "aws_instance" "test_server" {
   ami           = "ami-0c55b159cbfafe1f0"
-  instance_type = "t3.2xlarge"
+  instance_type = "t3.micro"   # cheaper than t3.2xlarge
 
   tags = {
     Environment = "Dev"
