@@ -1,25 +1,32 @@
-name: Infracost
+name: infracost
 
 on:
   pull_request:
+  push:
     branches:
       - main
 
 jobs:
   infracost:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Infracost
-        uses: infracost/actions/setup@v3
-        with:
-          api-key: ${{ secrets.INFRACOST_API_KEY }}
-
-      - name: Run Infracost
-        uses: infracost/actions/run@v3
+      - name: Infracost breakdown
+        uses: infracost/actions@v3
         with:
           path: .
-          post-condition: always
+          format: json
+          out-file: infracost.json
+        env:
+          INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
+
+      - name: Upload to Infracost
+        uses: infracost/actions@v3
+        with:
+          command: upload
+          path: infracost.json
+        env:
+          INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
